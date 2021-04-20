@@ -5,7 +5,7 @@ Rapid Moon Protocol - get in or miss out #RAPID
 
 ### Technology
 Utlizing superior modern blockchain technology - 
-<br /> ![Truffle](https://www.trufflesuite.com/) (Automation) :bicyclist: <br /> ![Openzeppelin](https://openzeppelin.com/) (Security) :computer: <br /> ![UniSwap](https://uniswap.org/) (Defi) :heavy_dollar_sign:
+<br /> [Truffle](https://www.trufflesuite.com/) (Automation) :bicyclist: <br /> [Openzeppelin](https://openzeppelin.com/) (Security) :computer: <br /> [UniSwap](https://uniswap.org/) (Defi) :heavy_dollar_sign:
 
 ### Community Driven
 :100:% community owned and driven <br />
@@ -26,9 +26,9 @@ Americas :earth_americas: <br />
 Asia :earth_asia:<br />
 
 ### Social
-![@RapidMoonCoin Twitter](https://twitter.com/RapidMoonCoin)   <br />
-![RapidMoonCoin Discord](https://discord.gg/7eN8BMYYdh)  <br />
-![RapidMoonCoin Telegram](https://t.me/rapidmooncoin)  <br />
+[@RapidMoonCoin Twitter](https://twitter.com/RapidMoonCoin)   <br />
+[RapidMoonCoin Discord](https://discord.gg/7eN8BMYYdh)  <br />
+[RapidMoonCoin Telegram](https://t.me/rapidmooncoin)  <br />
 
 
 <!--
