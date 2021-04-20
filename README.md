@@ -4,7 +4,7 @@ We have a simple mission, a 1000x moonshot :rocket::moon:<br />
 Rapid Moon Protocol - get in or miss out #RAPID
 
 ### Technology
-Utlizing superior modern blockchain technology - 
+Utilizing superior modern blockchain technology - 
 <br /> [Truffle](https://www.trufflesuite.com/) (Automation) :bicyclist: <br /> [Openzeppelin](https://openzeppelin.com/) (Security) :computer: <br /> [UniSwap](https://uniswap.org/) (Defi) :heavy_dollar_sign:
 
 ### Community Driven
