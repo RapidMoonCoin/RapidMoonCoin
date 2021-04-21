@@ -12,7 +12,7 @@ import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol';
 
 
-abstract contract RapidMoonCoin is Context, IERC20, Ownable {
+abstract contract RapidMoonCoin is Context, IERC20, Ownable, ReentrancyGuard {
     using SafeMath for uint256;
     using Address for address;
 
@@ -63,7 +63,7 @@ abstract contract RapidMoonCoin is Context, IERC20, Ownable {
         inSwapAndLiquify = false;
     }
     
-    constructor ()  {
+    constructor ()  ReentrancyGuard() {
         _rOwned[_msgSender()] = _rTotal;
         
         IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F);
@@ -102,7 +102,7 @@ abstract contract RapidMoonCoin is Context, IERC20, Ownable {
         return tokenFromReflection(_rOwned[account]);
     }
 
-    function transfer(address recipient, uint256 amount) public override returns (bool) {
+    function transfer(address recipient, uint256 amount) nonReentrant() public override returns (bool) {
         _transfer(_msgSender(), recipient, amount);
         return true;
     }
@@ -111,23 +111,23 @@ abstract contract RapidMoonCoin is Context, IERC20, Ownable {
         return _allowances[owner][spender];
     }
 
-    function approve(address spender, uint256 amount) public override returns (bool) {
+    function approve(address spender, uint256 amount) nonReentrant() public override returns (bool) {
         _approve(_msgSender(), spender, amount);
         return true;
     }
 
-    function transferFrom(address sender, address recipient, uint256 amount) public override returns (bool) {
+    function transferFrom(address sender, address recipient, uint256 amount) nonReentrant() public override returns (bool) {
         _transfer(sender, recipient, amount);
         _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "ERC20: transfer amount exceeds allowance"));
         return true;
     }
 
-    function increaseAllowance(address spender, uint256 addedValue) public virtual returns (bool) {
+    function increaseAllowance(address spender, uint256 addedValue) nonReentrant() public virtual returns (bool) {
         _approve(_msgSender(), spender, _allowances[_msgSender()][spender].add(addedValue));
         return true;
     }
 
-    function decreaseAllowance(address spender, uint256 subtractedValue) public virtual returns (bool) {
+    function decreaseAllowance(address spender, uint256 subtractedValue) nonReentrant() public virtual returns (bool) {
         _approve(_msgSender(), spender, _allowances[_msgSender()][spender].sub(subtractedValue, "ERC20: decreased allowance below zero"));
         return true;
     }
@@ -140,7 +140,7 @@ abstract contract RapidMoonCoin is Context, IERC20, Ownable {
         return _tFeeTotal;
     }
 
-    function deliver(uint256 tAmount) public {
+    function deliver(uint256 tAmount) nonReentrant() public {
         address sender = _msgSender();
         require(!_isExcluded[sender], "Excluded addresses cannot call this function");
         (uint256 rAmount,,,,,) = _getValues(tAmount);
@@ -166,7 +166,7 @@ abstract contract RapidMoonCoin is Context, IERC20, Ownable {
         return rAmount.div(currentRate);
     }
 
-    function excludeFromReward(address account) public onlyOwner() {
+    function excludeFromReward(address account) nonReentrant() public onlyOwner() {
         // require(account != 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D, 'We can not exclude Uniswap router.');
         require(!_isExcluded[account], "Account is already excluded");
         if(_rOwned[account] > 0) {
@@ -176,7 +176,7 @@ abstract contract RapidMoonCoin is Context, IERC20, Ownable {
         _excluded.push(account);
     }
 
-    function includeInReward(address account) external onlyOwner() {
+    function includeInReward(address account) nonReentrant() external onlyOwner() {
         require(_isExcluded[account], "Account is already excluded");
         for (uint256 i = 0; i < _excluded.length; i++) {
             if (_excluded[i] == account) {
@@ -188,7 +188,7 @@ abstract contract RapidMoonCoin is Context, IERC20, Ownable {
             }
         }
     }
-        function _transferBothExcluded(address sender, address recipient, uint256 tAmount) private {
+        function _transferBothExcluded(address sender, address recipient, uint256 tAmount) nonReentrant() private {
         (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity) = _getValues(tAmount);
         _tOwned[sender] = _tOwned[sender].sub(tAmount);
         _rOwned[sender] = _rOwned[sender].sub(rAmount);
@@ -199,29 +199,29 @@ abstract contract RapidMoonCoin is Context, IERC20, Ownable {
         emit Transfer(sender, recipient, tTransferAmount);
     }
     
-        function excludeFromFee(address account) public onlyOwner {
+        function excludeFromFee(address account) nonReentrant() public onlyOwner {
         _isExcludedFromFee[account] = true;
     }
     
-    function includeInFee(address account) public onlyOwner {
+    function includeInFee(address account) nonReentrant() public onlyOwner {
         _isExcludedFromFee[account] = false;
     }
     
-    function setTaxFeePercent(uint256 taxFee) external onlyOwner() {
+    function setTaxFeePercent(uint256 taxFee) nonReentrant() external onlyOwner() {
         _taxFee = taxFee;
     }
     
-    function setLiquidityFeePercent(uint256 liquidityFee) external onlyOwner() {
+    function setLiquidityFeePercent(uint256 liquidityFee) nonReentrant() external onlyOwner() {
         _liquidityFee = liquidityFee;
     }
    
-    function setMaxTxPercent(uint256 maxTxPercent) external onlyOwner() {
+    function setMaxTxPercent(uint256 maxTxPercent) nonReentrant() external onlyOwner() {
         _maxTxAmount = _tTotal.mul(maxTxPercent).div(
             10**2
         );
     }
 
-    function setSwapAndLiquifyEnabled(bool _enabled) public onlyOwner {
+    function setSwapAndLiquifyEnabled(bool _enabled) nonReentrant() public onlyOwner {
         swapAndLiquifyEnabled = _enabled;
         emit SwapAndLiquifyEnabledUpdated(_enabled);
     }
@@ -229,7 +229,7 @@ abstract contract RapidMoonCoin is Context, IERC20, Ownable {
      //to recieve ETH from uniswapV2Router when swaping
     receive() external payable {}
 
-    function _reflectFee(uint256 rFee, uint256 tFee) private {
+    function _reflectFee(uint256 rFee, uint256 tFee) nonReentrant() private {
         _rTotal = _rTotal.sub(rFee);
         _tFeeTotal = _tFeeTotal.add(tFee);
     }
@@ -272,7 +272,7 @@ abstract contract RapidMoonCoin is Context, IERC20, Ownable {
         return (rSupply, tSupply);
     }
     
-    function _takeLiquidity(uint256 tLiquidity) private {
+    function _takeLiquidity(uint256 tLiquidity) nonReentrant() private {
         uint256 currentRate =  _getRate();
         uint256 rLiquidity = tLiquidity.mul(currentRate);
         _rOwned[address(this)] = _rOwned[address(this)].add(rLiquidity);
@@ -292,7 +292,7 @@ abstract contract RapidMoonCoin is Context, IERC20, Ownable {
         );
     }
     
-    function removeAllFee() private {
+    function removeAllFee() nonReentrant() private {
         if(_taxFee == 0 && _liquidityFee == 0) return;
         
         _previousTaxFee = _taxFee;
@@ -302,7 +302,7 @@ abstract contract RapidMoonCoin is Context, IERC20, Ownable {
         _liquidityFee = 0;
     }
     
-    function restoreAllFee() private {
+    function restoreAllFee() nonReentrant() private {
         _taxFee = _previousTaxFee;
         _liquidityFee = _previousLiquidityFee;
     }
@@ -323,7 +323,7 @@ abstract contract RapidMoonCoin is Context, IERC20, Ownable {
         address from,
         address to,
         uint256 amount
-    )   private {
+    )   nonReentrant() private {
         require(from != address(0), "ERC20: transfer from the zero address");
         require(to != address(0), "ERC20: transfer to the zero address");
         require(amount > 0, "Transfer amount must be greater than zero");
@@ -365,7 +365,7 @@ abstract contract RapidMoonCoin is Context, IERC20, Ownable {
         _tokenTransfer(from,to,amount,takeFee);
     }
 
-    function swapAndLiquify(uint256 contractTokenBalance) private lockTheSwap {
+    function swapAndLiquify(uint256 contractTokenBalance) nonReentrant() private lockTheSwap {
         // split the contract balance into halves
         uint256 half = contractTokenBalance.div(2);
         uint256 otherHalf = contractTokenBalance.sub(half);
@@ -388,7 +388,7 @@ abstract contract RapidMoonCoin is Context, IERC20, Ownable {
         emit SwapAndLiquify(half, newBalance, otherHalf);
     }
 
-    function swapTokensForEth(uint256 tokenAmount) private {
+    function swapTokensForEth(uint256 tokenAmount) nonReentrant() private {
         // generate the uniswap pair path of token -> weth
         address[] memory path = new address[](2);
         path[0] = address(this);
@@ -406,7 +406,7 @@ abstract contract RapidMoonCoin is Context, IERC20, Ownable {
         );
     }
 
-    function addLiquidity(uint256 tokenAmount, uint256 ethAmount) private {
+    function addLiquidity(uint256 tokenAmount, uint256 ethAmount) nonReentrant() private {
         // approve token transfer to cover all possible scenarios
         _approve(address(this), address(uniswapV2Router), tokenAmount);
 
@@ -422,7 +422,7 @@ abstract contract RapidMoonCoin is Context, IERC20, Ownable {
     }
 
     //this method is responsible for taking all fee, if takeFee is true
-    function _tokenTransfer(address sender, address recipient, uint256 amount,bool takeFee) private {
+    function _tokenTransfer(address sender, address recipient, uint256 amount,bool takeFee) nonReentrant() private {
         if(!takeFee)
             removeAllFee();
         
@@ -442,7 +442,7 @@ abstract contract RapidMoonCoin is Context, IERC20, Ownable {
             restoreAllFee();
     }
 
-    function _transferStandard(address sender, address recipient, uint256 tAmount) private {
+    function _transferStandard(address sender, address recipient, uint256 tAmount) nonReentrant() private {
         (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity) = _getValues(tAmount);
         _rOwned[sender] = _rOwned[sender].sub(rAmount);
         _rOwned[recipient] = _rOwned[recipient].add(rTransferAmount);
@@ -451,7 +451,7 @@ abstract contract RapidMoonCoin is Context, IERC20, Ownable {
         emit Transfer(sender, recipient, tTransferAmount);
     }
 
-    function _transferToExcluded(address sender, address recipient, uint256 tAmount) private {
+    function _transferToExcluded(address sender, address recipient, uint256 tAmount) nonReentrant() private {
         (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity) = _getValues(tAmount);
         _rOwned[sender] = _rOwned[sender].sub(rAmount);
         _tOwned[recipient] = _tOwned[recipient].add(tTransferAmount);
@@ -461,7 +461,7 @@ abstract contract RapidMoonCoin is Context, IERC20, Ownable {
         emit Transfer(sender, recipient, tTransferAmount);
     }
 
-    function _transferFromExcluded(address sender, address recipient, uint256 tAmount) private {
+    function _transferFromExcluded(address sender, address recipient, uint256 tAmount) nonReentrant() private {
         (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity) = _getValues(tAmount);
         _tOwned[sender] = _tOwned[sender].sub(tAmount);
         _rOwned[sender] = _rOwned[sender].sub(rAmount);
