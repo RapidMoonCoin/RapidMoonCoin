@@ -1,0 +1,32 @@
+{
+  "name": "rapidmoon",
+  "version": "1.0.0",
+  "description": "Rapid Moon Protocol 1000x growth project",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RapidMoonCoin/RapidMoonCoin.git"
+  },
+  "keywords": [
+    "1000x",
+    "moonshot",
+    "theastronaut"
+  ],
+  "author": "The Astronaut",
+  "license": "Unlicense",
+  "bugs": {
+    "url": "https://github.com/RapidMoonCoin/RapidMoonCoin/issues"
+  },
+  "homepage": "https://github.com/RapidMoonCoin/RapidMoonCoin#readme",
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.0.0",
+    "@uniswap/v2-core": "^1.0.1",
+    "@uniswap/v2-periphery": "*"
+  }
+}
